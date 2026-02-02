@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Club Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .event-card {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .event-card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .event-title {
+            font-size: 1.35rem;
+            margin-bottom: 0.25rem;
+            color: var(--secondary);
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .event-date-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .event-date-badge .day {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .event-date-badge .month {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .event-body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .event-meta {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .event-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .participant-list {
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            background: white;
+        }
+    </style>
+</head>
+
+<body class="app-body">
+    <!-- Sidebar -->
+
+    <main class="main-content fade-in">
+        <header class="section-header" style="margin-top: 0">
+            <div>
+                <h1>Events</h1>
+                <p style="color: var(--text-muted)">Discover, enroll, and manage club activities.</p>
+            </div>
+            <div id="createControls" style="display: none;">
+                <button class="btn btn-primary" onclick="Events.openModal()">+ Create Event</button>
+            </div>
+        </header>
+
+        <div class="events-grid" id="eventsGrid">
+            <!-- Dynamic Content -->
+        </div>
+    </main>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create Event</h3>
+                <button class="close-modal" onclick="Events.closeModal()">&times;</button>
+            </div>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+
+                <div class="input-group">
+                    <label class="label">Event Title</label>
+                    <input type="text" id="eventTitle" class="input" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Date & Time</label>
+                    <input type="datetime-local" id="eventDate" class="input" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Venue</label>
+                    <input type="text" id="eventVenue" class="input" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Description</label>
+                    <textarea id="eventDesc" class="input" rows="4" required></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="Events.closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Approvals/Attendance Modal -->
+    <div class="modal-overlay" id="approvalsModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 id="approvalEventTitle">Manage Participants</h3>
+                <button class="close-modal" onclick="Events.closeApprovals()">&times;</button>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Pending Requests</h4>
+                <div class="participant-list" id="pendingList" style="background: #ffffff;">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Approved Participants
+                    (Attendance)</h4>
+                <div class="participant-list" id="approvedList" style="background: #f8fafc;">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: right;">
+                <button type="button" class="btn btn-secondary" onclick="Events.closeApprovals()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/events.js"></script>
+</body>
+
+</html>
